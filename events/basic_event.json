@@ -1,0 +1,28 @@
+{
+  'update_id': 841019407,
+  'message': {
+    'message_id': 580,
+    'from': {
+      'id': 697725,
+      'is_bot': False,
+      'first_name': 'Tobias',
+      'last_name': 'Büning',
+      'language_code': 'de'
+    },
+    'chat': {
+      'id': 697725,
+      'first_name': 'Tobias',
+      'last_name': 'Büning',
+      'type': 'private'
+    },
+    'date': 1577548481,
+    'text': '/start',
+    'entities': [
+      {
+        'offset': 0, 
+        'length': 6,
+        'type': 'bot_command'
+      }
+    ]
+  }
+}

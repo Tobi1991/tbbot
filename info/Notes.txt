@@ -1,0 +1,33 @@
+AWS Lambda Function
+
+Runtime: Python 3.8
+
+Telegram
+
+Bot Token: You can find out the Token by talking to the BotFather
+
+Setting up the Webhook:
+
+Copy & Paste the following into a browser (replace BotToken and API Endpoint)
+https://api.telegram.org/<BotToken>/setWebhook?url=<APIGatewayEndpoint>
+
+
+AWS API Gateway
+
+Necessary steps:
+
+Create new API Gateway -> Create new method (ANY) -> Invoke Lambda Function ->
+Deploy API
+
+Invocation URL:
+
+https://lah3r6u74j.execute-api.eu-central-1.amazonaws.com/development
+
+Environment Variables
+
+TELE_TOKEN = <BotToken>
+COUNTRY_INFOS_TABLE = country_infos
+PLAYER_INFOS_TABLE = player_infos
+REGISTRATION_COMMAND = /register
+QUIZ_COMMAND = /quiz
+NUMBER_OF_QUESTIONS = 5
