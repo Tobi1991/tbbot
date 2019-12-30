@@ -43,6 +43,7 @@ def send_question_with_reply_keyboard(text, telegram_message, game_mode, game_co
     # Select a random country (the correct answer)
     number_of_countries = 242
     random_integer = str(random.randint(0, number_of_countries))
+    random_capital = get_country_attribute(index_str=random_integer, attribute='capital', attribute_type='S')
     random_country = get_country_attribute(index_str=random_integer, attribute='country', attribute_type='S')
 
     # Choose a random Position for the Reply ReplyKeyboardMarkup
@@ -56,11 +57,11 @@ def send_question_with_reply_keyboard(text, telegram_message, game_mode, game_co
 
     # Create a List of possible answers
     random_countries = []
-    for random_integer in random_integers:
-        if(random_integer == random_pos):
-            random_countries.append(random_country)
+    for i in range(len(random_integers)):
+        if(i == random_pos):
+            random_countries.append(random_capital)
         else:
-            random_countries.append(get_country_attribute(index_str=str(random_integer), attribute='country', attribute_type='S'))
+            random_countries.append(get_country_attribute(index_str=str(random_integers[i]), attribute='capital', attribute_type='S'))
 
     # Create the Telegram Reply Keyboard
     reply_keyboard = ReplyKeyboardMarkup([random_countries], resize_keyboard=True, one_time_keyboard=True)
