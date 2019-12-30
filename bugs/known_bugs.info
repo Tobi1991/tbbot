@@ -1,1 +1,2 @@
 Player registration is not working correct (player name will not be updated) - fixed
+Migrate all "registration code" to the register_player function (if player already registered)

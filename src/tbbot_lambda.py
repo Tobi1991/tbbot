@@ -3,8 +3,12 @@ import os
 import boto3
 import botocore
 import random
+import telegram
 
 from botocore.vendored import requests
+from telegram import Bot
+from telegram import ReplyKeyboardMarkup
+
 
 # Get DynamoDB Client
 client = boto3.client('dynamodb')
@@ -18,17 +22,51 @@ REGISTRATION_COMMAND = os.environ['REGISTRATION_COMMAND']
 QUIZ_COMMAND = os.environ['QUIZ_COMMAND']
 NUMBER_OF_QUESTIONS = os.environ['NUMBER_OF_QUESTIONS']
 
-# Load a DynamoDB Table
-def load_dynamodb_table(table):
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(table)
-    return table
+QUESTION_TEXT = "What is the capital city of the following country?\n\n"
+NUMBER_OF_CHOICES = 4
+
+# Create a Telegram Bot Handler
+telegram_bot = Bot(TELE_TOKEN)
 
 # Send a Telegram Message to a given Chat ID
 def send_message(text, chat_id):
     final_text = text
     url = URL + f"sendMessage?text={final_text}&chat_id={chat_id}"
     requests.get(url)
+
+# Sends a Custom Reply Keyboard to the User
+def send_question_with_reply_keyboard(text, telegram_message, game_mode, game_counter, number_of_choices, chat_id):
+
+    # Select a random country
+    number_of_countries = 242
+
+    # Select a random country (the correct answer)
+    number_of_countries = 242
+    random_integer = str(random.randint(0, number_of_countries))
+    random_country = get_country_attribute(index_str=random_integer, attribute='country', attribute_type='S')
+
+    # Choose a random Position for the Reply ReplyKeyboardMarkup
+    random_pos = random.randint(0, number_of_choices - 1)
+
+    # Update the Player Information Table
+    update_player_info(telegram_message=telegram_message, game_mode=game_mode, game_counter=game_counter, last_game_choice=random_integer)
+
+    # Note: range(0, 3) = [0, 1, 2]
+    random_integers = random.sample(range(0, number_of_countries + 1), number_of_choices)
+
+    # Create a List of possible answers
+    random_countries = []
+    for random_integer in random_integers:
+        if(random_integer == random_pos):
+            random_countries.append(random_country)
+        else:
+            random_countries.append(get_country_attribute(index_str=str(random_integer), attribute='country', attribute_type='S'))
+
+    # Create the Telegram Reply Keyboard
+    reply_keyboard = ReplyKeyboardMarkup([random_countries], resize_keyboard=True, one_time_keyboard=True)
+
+    # Send the Reply Keyboard
+    telegram_bot.sendMessage(int(chat_id), text=text + random_country, reply_markup=reply_keyboard)
 
 # Adds a new player to the Player Database
 def register_player(telegram_message):
@@ -205,15 +243,7 @@ def lambda_handler(event, context):
     # Start the Quiz
     if(game_counter == "0" and telegram_text == QUIZ_COMMAND):
 
-        # Select a random country
-        number_of_countries = 242
-        random_integer = str(random.randint(0, number_of_countries))
-        random_country = get_country_attribute(index_str=random_integer, attribute='country', attribute_type='S')
-
-        # Update the Player Information Table
-        update_player_info(telegram_message=telegram_message, game_mode="quiz", game_counter=NUMBER_OF_QUESTIONS, last_game_choice=random_integer)
-
-        send_message("What is the capital city of the following country?\n\n" + random_country, chat_id)
+        send_question_with_reply_keyboard(text=QUESTION_TEXT, telegram_message=telegram_message, game_mode="quiz", game_counter=NUMBER_OF_QUESTIONS, number_of_choices=NUMBER_OF_CHOICES, chat_id=chat_id)
 
     if(int(game_counter) >= 0 and telegram_text != QUIZ_COMMAND):
 
@@ -229,24 +259,13 @@ def lambda_handler(event, context):
         else:
             send_message("Sorry! The correct answer was " + correct_answer, chat_id)
 
-        # Select another random country
-        number_of_countries = 242
-        random_integer = str(random.randint(0, 242))
-        random_country = get_country_attribute(index_str=random_integer, attribute='country', attribute_type='S')
-
         # Update the Player Information Table
         if(int(game_counter) == 0):
             update_player_info(telegram_message=telegram_message, game_mode="main_menu")
             send_message("Thank you for playing!", chat_id)
         else:
             # Select a random country
-            number_of_countries = 242
-            random_integer = str(random.randint(0, number_of_countries))
-            random_country = get_country_attribute(index_str=random_integer, attribute='country', attribute_type='S')
-            update_player_info(telegram_message=telegram_message, game_counter=str(int(game_counter) - 1), last_game_choice=random_integer)
-            send_message("What is the capital city of the following country?\n\n" + random_country, chat_id)
-
-
+            send_question_with_reply_keyboard(text=QUESTION_TEXT, telegram_message=telegram_message, game_mode="quiz", game_counter=str(int(game_counter) - 1), number_of_choices=NUMBER_OF_CHOICES, chat_id=chat_id)
 
     return {
         'registration_statusCode': 200
